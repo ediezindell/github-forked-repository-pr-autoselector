@@ -3,13 +3,13 @@ window.addEventListener("load", () => {
    * @type {string}
    * pathを保持
    */
-  let currentPath = location.pathname;
+  let currentPath = "";
 
   /**
    * DOMに変更があった場合に実行される処理
    * PRのマージ先のユーザー名がマージ元と異なる場合にリダイレクト
    */
-  const callback = () => {
+  const check = () => {
     const path = location.pathname;
     if (path === currentPath) {
       return;
@@ -23,11 +23,13 @@ window.addEventListener("load", () => {
 
     // PR作成画面以外では実行しない
     if (!matches) {
+      console.log("not match");
       return;
     }
 
     // マージ先が同じユーザー名なら実行しない
     if (matches.groups.userTo === matches.groups.userFrom) {
+      console.lo;
       return;
     }
 
@@ -52,8 +54,12 @@ window.addEventListener("load", () => {
    * SPA対策として、URL変更をDOM変更を通じて検知する
    * @type {MutationObserver}
    */
-  const observer = new MutationObserver(callback);
+  const observer = new MutationObserver(check);
 
+  // 初回実行
+  check();
+
+  // DOM監視
   observer.observe(document, {
     childList: true,
     subtree: true,
