@@ -1,3 +1,4 @@
+// @ts-check
 window.addEventListener("load", () => {
   /**
    * @type {string}
@@ -9,7 +10,7 @@ window.addEventListener("load", () => {
    * DOMに変更があった場合に実行される処理
    * PRのマージ先のユーザー名がマージ元と異なる場合にリダイレクト
    */
-  const check = () => {
+  const observerCallback = () => {
     const path = location.pathname;
     if (path === currentPath) {
       return;
@@ -17,47 +18,50 @@ window.addEventListener("load", () => {
     currentPath = path;
 
     // 正規表現マッチ
-    const pattern =
-      /\/(?<userTo>.+)\/(?<repositoryTo>.+)\/compare\/(?<branchTo>.+)\.\.\.(?<userFrom>.+):(?<repositoryFrom>.+):(?<branchFrom>.+)/;
+    const pattern = new RegExp(
+      "^/(?<userTo>.+)/(?<repositoryTo>.+)/compare/(?<branchTo>.+)\\.\\.\\.(?<userFrom>.+):(?<repositoryFrom>.+):(?<branchFrom>.+)$",
+    );
     const matches = pattern.exec(path);
 
     // PR作成画面以外では実行しない
-    if (!matches) {
-      console.log("not match");
+    if (!matches?.groups) {
       return;
     }
+
+    const { userTo, branchTo, userFrom, repositoryFrom, branchFrom } =
+      matches.groups;
 
     // マージ先が同じユーザー名なら実行しない
-    if (matches.groups.userTo === matches.groups.userFrom) {
-      console.lo;
+    if (userTo === userFrom) {
       return;
     }
 
-    // 一応確認ポップアップを出す
+    // 確認ポップアップを出す
     if (
       !window.confirm(
-        "PR先がFork元になっているようです。自身のリポジトリに変更しますか？"
+        "PR先がFork元になっているようです。自身のリポジトリに変更しますか？",
       )
     ) {
+      // キャンセル時は実行しない
       return;
     }
 
     // 遷移先
-    const redirect_to = `/${matches.groups.userFrom}/${matches.groups.repositoryFrom}/compare/${matches.groups.branchTo}...${matches.groups.userFrom}:${matches.groups.repositoryFrom}:${matches.groups.branchFrom}`;
+    const redirectTo = `/${userFrom}/${repositoryFrom}/compare/${branchTo}...${userFrom}:${repositoryFrom}:${branchFrom}`;
 
     // リダイレクト
-    location.href = redirect_to;
+    location.href = redirectTo;
   };
 
   /**
+   * @type {MutationObserver}
    * DOM変更の監視処理
    * SPA対策として、URL変更をDOM変更を通じて検知する
-   * @type {MutationObserver}
    */
-  const observer = new MutationObserver(check);
+  const observer = new MutationObserver(observerCallback);
 
   // 初回実行
-  check();
+  observerCallback();
 
   // DOM監視
   observer.observe(document, {

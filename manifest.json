@@ -1,15 +1,19 @@
 {
   "name": "github-forked-repository-pr-autoselector",
   "description": "GitHubでFork元のリポジトリに間違えてPRを出さないようにするための拡張機能",
-  "version": "0.1",
+  "version": "1.0.0",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html"
   },
   "content_scripts": [
     {
-      "js": ["content.js"],
-      "matches": ["https://github.com/*"]
+      "js": [
+        "content.js"
+      ],
+      "matches": [
+        "https://github.com/*"
+      ]
     }
   ]
 }
